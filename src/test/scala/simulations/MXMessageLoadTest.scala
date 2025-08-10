@@ -20,18 +20,18 @@ class MXMessageLoadTest extends Simulation {
 
   val authToken = "your_sso_token_here"
 
-  // Generate unique MX messages dynamically
+  // Optimized feeder using pre-generated data pools
   val uniqueMessageFeeder: Iterator[Map[String, String]] = Iterator.continually {
-    val messageType = Random.shuffle(List("camt.054", "camt.053", "camt.052", "pacs.008")).head
-    val uniqueId = UUID.randomUUID().toString
+    val messageType = DataPool.getRandomMessageType
+    val uniqueId = DataPool.generateUniqueId
     val timestamp = Instant.now().toString
-    val amount = f"${Random.nextDouble() * 10000}%.2f"
-    val currency = Random.shuffle(List("GBP", "EUR", "USD")).head
-    val accountId = f"ACC${Random.nextInt(999999)}%06d"
-    val messageId = s"MSG-${System.currentTimeMillis()}-${Random.nextInt(10000)}"
-    val bic = Random.shuffle(List("BUKBGB22", "NWBKGB2L", "HBUKGB4B", "LOYDGB2L")).head
-    val endToEndId = s"E2E-${uniqueId.substring(0, 8)}"
-    val instructionId = s"INST-${uniqueId.substring(0, 8)}"
+    val amount = DataPool.generateRandomAmount
+    val currency = DataPool.getRandomCurrency
+    val accountId = DataPool.getRandomAccountId
+    val messageId = DataPool.generateMessageId
+    val bic = DataPool.getRandomBic
+    val endToEndId = DataPool.generateEndToEndId(uniqueId)
+    val instructionId = DataPool.generateInstructionId(uniqueId)
 
     Map(
       "messageType" -> messageType,
@@ -48,7 +48,7 @@ class MXMessageLoadTest extends Simulation {
     )
   }
 
-  // Function to generate unique MX message XML wrapped in JSON
+  // Optimized function to generate unique MX message XML wrapped in JSON
   def generateMXMessagePayload(messageType: String, uniqueId: String, messageId: String,
                                timestamp: String, amount: String, currency: String, accountId: String,
                                bic: String, endToEndId: String, instructionId: String): String = {
@@ -60,13 +60,8 @@ class MXMessageLoadTest extends Simulation {
       case "pacs.008" => Pacs008Generator.generate(uniqueId, messageId, timestamp, amount, currency, accountId, bic, endToEndId, instructionId)
     }
 
-    // Escape XML for JSON and wrap in the payload structure
-    //    val escapedXml = mxXml.replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")
-    //    s"""{"payload":"$escapedXml"}"""
-
-    val rootNode = JsonMapper.mapper.createObjectNode()
-    rootNode.put("payload", mxXml)
-    JsonMapper.mapper.writeValueAsString(rootNode)
+    // Use optimized JsonMapper for better performance
+    JsonMapper.createPayloadJson(mxXml)
   }
 
   val normalLoadScenario: ScenarioBuilder = scenario("Normal Load Test - Unique MX Messages")

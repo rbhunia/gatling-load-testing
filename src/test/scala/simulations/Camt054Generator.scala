@@ -2,55 +2,54 @@ package simulations
 
 object Camt054Generator {
 
-  def generate(uniqueId: String, messageId: String, timestamp: String,
-                         amount: String, currency: String, accountId: String, bic: String): String = {
-    s"""<?xml version="1.0" encoding="UTF-8"?>
+  // Pre-compiled template for better performance
+  private val xmlTemplate = """<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08">
   <BkToCstmrDbtCdtNtfctn>
     <GrpHdr>
-      <MsgId>$messageId</MsgId>
-      <CreDtTm>$timestamp</CreDtTm>
+      <MsgId>%s</MsgId>
+      <CreDtTm>%s</CreDtTm>
       <NbOfTxs>1</NbOfTxs>
       <MsgRcpt>
         <Nm>Customer Name</Nm>
         <Id>
           <OrgId>
             <Othr>
-              <Id>$accountId</Id>
+              <Id>%s</Id>
             </Othr>
           </OrgId>
         </Id>
       </MsgRcpt>
     </GrpHdr>
     <Ntfctn>
-      <Id>NOTIF-$uniqueId</Id>
+      <Id>NOTIF-%s</Id>
       <ElctrncSeqNb>1</ElctrncSeqNb>
-      <CreDtTm>$timestamp</CreDtTm>
+      <CreDtTm>%s</CreDtTm>
       <Acct>
         <Id>
-          <IBAN>GB33BUKB20201$accountId</IBAN>
+          <IBAN>GB33BUKB20201%s</IBAN>
         </Id>
         <Svcr>
           <FinInstnId>
-            <BICFI>$bic</BICFI>
+            <BICFI>%s</BICFI>
           </FinInstnId>
         </Svcr>
       </Acct>
       <Ntry>
-        <Amt Ccy="$currency">$amount</Amt>
+        <Amt Ccy="%s">%s</Amt>
         <CdtDbtInd>CRDT</CdtDbtInd>
         <Sts>BOOK</Sts>
         <BookgDt>
-          <Dt>${timestamp.substring(0, 10)}</Dt>
+          <Dt>%s</Dt>
         </BookgDt>
         <ValDt>
-          <Dt>${timestamp.substring(0, 10)}</Dt>
+          <Dt>%s</Dt>
         </ValDt>
         <NtryDtls>
           <TxDtls>
             <Refs>
-              <MsgId>$messageId</MsgId>
-              <AcctSvcrRef>REF-$uniqueId</AcctSvcrRef>
+              <MsgId>%s</MsgId>
+              <AcctSvcrRef>REF-%s</AcctSvcrRef>
             </Refs>
           </TxDtls>
         </NtryDtls>
@@ -58,5 +57,14 @@ object Camt054Generator {
     </Ntfctn>
   </BkToCstmrDbtCdtNtfctn>
 </Document>"""
+
+  def generate(uniqueId: String, messageId: String, timestamp: String,
+                         amount: String, currency: String, accountId: String, bic: String): String = {
+    val dateOnly = timestamp.substring(0, 10)
+    
+    xmlTemplate.format(
+      messageId, timestamp, accountId, uniqueId, timestamp, accountId, 
+      bic, currency, amount, dateOnly, dateOnly, messageId, uniqueId
+    )
   }
 }
