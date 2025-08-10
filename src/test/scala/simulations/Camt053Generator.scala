@@ -2,41 +2,40 @@ package simulations
 
 object Camt053Generator {
 
-  def generate(uniqueId: String, messageId: String, timestamp: String,
-               amount: String, currency: String, accountId: String, bic: String): String = {
-    s"""<?xml version="1.0" encoding="UTF-8"?>
+  // Pre-compiled template for better performance
+  private val xmlTemplate = """<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
   <BkToCstmrStmt>
     <GrpHdr>
-      <MsgId>$messageId</MsgId>
-      <CreDtTm>$timestamp</CreDtTm>
+      <MsgId>%s</MsgId>
+      <CreDtTm>%s</CreDtTm>
       <NbOfTxs>1</NbOfTxs>
       <MsgRcpt>
         <Nm>Customer Name</Nm>
         <Id>
           <OrgId>
             <Othr>
-              <Id>$accountId</Id>
+              <Id>%s</Id>
             </Othr>
           </OrgId>
         </Id>
       </MsgRcpt>
     </GrpHdr>
     <Stmt>
-      <Id>STMT-$uniqueId</Id>
+      <Id>STMT-%s</Id>
       <ElctrncSeqNb>1</ElctrncSeqNb>
-      <CreDtTm>$timestamp</CreDtTm>
+      <CreDtTm>%s</CreDtTm>
       <FrToDt>
-        <FrDtTm>$timestamp</FrDtTm>
-        <ToDtTm>$timestamp</ToDtTm>
+        <FrDtTm>%s</FrDtTm>
+        <ToDtTm>%s</ToDtTm>
       </FrToDt>
       <Acct>
         <Id>
-          <IBAN>GB33BUKB20201$accountId</IBAN>
+          <IBAN>GB33BUKB20201%s</IBAN>
         </Id>
         <Svcr>
           <FinInstnId>
-            <BICFI>$bic</BICFI>
+            <BICFI>%s</BICFI>
           </FinInstnId>
         </Svcr>
       </Acct>
@@ -46,25 +45,34 @@ object Camt053Generator {
             <Cd>CLBD</Cd>
           </CdOrPrtry>
         </Tp>
-        <Amt Ccy="$currency">$amount</Amt>
+        <Amt Ccy="%s">%s</Amt>
         <CdtDbtInd>CRDT</CdtDbtInd>
         <Dt>
-          <Dt>${timestamp.substring(0, 10)}</Dt>
+          <Dt>%s</Dt>
         </Dt>
       </Bal>
       <Ntry>
-        <Amt Ccy="$currency">$amount</Amt>
+        <Amt Ccy="%s">%s</Amt>
         <CdtDbtInd>CRDT</CdtDbtInd>
         <Sts>BOOK</Sts>
         <BookgDt>
-          <Dt>${timestamp.substring(0, 10)}</Dt>
+          <Dt>%s</Dt>
         </BookgDt>
         <ValDt>
-          <Dt>${timestamp.substring(0, 10)}</Dt>
+          <Dt>%s</Dt>
         </ValDt>
       </Ntry>
     </Stmt>
   </BkToCstmrStmt>
 </Document>"""
+
+  def generate(uniqueId: String, messageId: String, timestamp: String,
+               amount: String, currency: String, accountId: String, bic: String): String = {
+    val dateOnly = timestamp.substring(0, 10)
+    
+    xmlTemplate.format(
+      messageId, timestamp, accountId, uniqueId, timestamp, timestamp, timestamp,
+      accountId, bic, currency, amount, dateOnly, currency, amount, dateOnly, dateOnly
+    )
   }
 }
