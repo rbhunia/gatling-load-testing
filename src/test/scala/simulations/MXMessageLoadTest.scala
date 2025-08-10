@@ -60,8 +60,8 @@ class MXMessageLoadTest extends Simulation {
       case "pacs.008" => Pacs008Generator.generate(uniqueId, messageId, timestamp, amount, currency, accountId, bic, endToEndId, instructionId)
     }
 
-    // Use optimized JsonMapper for better performance
-    JsonMapper.createPayloadJson(mxXml)
+    // Use optimized serialization for maximum performance
+    OptimizedJsonMapper.createPayloadJson(mxXml)
   }
 
   val normalLoadScenario: ScenarioBuilder = scenario("Normal Load Test - Unique MX Messages")
